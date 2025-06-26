@@ -121,7 +121,7 @@ if FOUND_TORCH:
 
             # Compute the step size of quantized values.
             self.scales = (self.max_range - self.min_range) / (2 ** num_bits - 1)
-            self.zero_points = -(self.min_range / self.scales).int()  # zp has to be positive, and a <=0, so we multiply by -1
+            self.zero_points = -(self.min_range / self.scales).round().int()  # zp has to be positive, and a <=0, so we multiply by -1
 
             self.scales = self.scales.to(get_working_device())
             self.zero_points = self.zero_points.to(get_working_device())
@@ -270,7 +270,7 @@ if FOUND_ONNXRUNTIME_EXTENSIONS:
                                max_range=max_range,
                                channel_axis=channel_axis)
 
-        # adjusts the quantization rage so the quantization grid include zero.
+        # adjusts the quantization range so the quantization grid include zero.
         a, b = adjust_range_to_include_zero(min_range, max_range, num_bits)
 
         # Compute the step size of quantized values.
