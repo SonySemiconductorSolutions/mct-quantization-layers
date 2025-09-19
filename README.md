@@ -1,6 +1,6 @@
 # Model Compression Toolkit (MCT) Quantizers
 
-The MCT Quantizers library is an open-source library developed by researchers and engineers working at Sony Semiconductor Israel. 
+The MCT Quantizers library is an open-source library developed by researchers and engineers working at Sony Semiconductor Solutions. 
 
 It provides tools for easily representing a quantized neural network in both Keras and PyTorch. The library offers researchers, developers, and engineers a set of useful quantizers, along with a simple interface for implementing new custom quantizers.
 
