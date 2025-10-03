@@ -39,7 +39,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install torch==${{  inputs.torch_version  }} onnx onnxruntime "onnxruntime-extensions<0.14"
+          pip install torch==${{  inputs.torch_version  }} "onnx<1.18" "onnxruntime<1.22" "onnxruntime-extensions<0.14"
       - name: Revert requirements for Torch 2.2
         if: startsWith(inputs.torch_version, '2.2')
         run: |
