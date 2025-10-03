@@ -5,11 +5,11 @@ on:
       mct_quantizers_version:
         description: 'MCT Quantizers version'
         required: true
-        default: 'v1.1.0'
+        default: 'v1.6.0'
       python_version:
         description: 'Python version'
         required: false
-        default: '3.10'
+        default: '3.12'
 
 jobs:
   build:
@@ -48,14 +48,14 @@ jobs:
           rm -rf mct_quantizers
       - name: Install TF
         run: |
-          pip install tensorflow==2.14.*
+          pip install tensorflow==2.15.*
       - name: Run TF Tests
         run: |
           python -m unittest discover tests/keras_tests --verbose
       - name: Prepare for Torch
         run: |
           pip uninstall tensorflow -y
-          pip install torch==2.0.* torchvision onnx onnxruntime "onnxruntime-extensions<0.14"
+          pip install torch==2.6.* torchvision "onnx<1.18" "onnxruntime<1.22" "onnxruntime-extensions<0.14"
       - name: Run Torch Tests
         run: |
           python -m unittest discover tests/pytorch_tests --verbose
