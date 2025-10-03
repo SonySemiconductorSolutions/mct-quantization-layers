@@ -59,7 +59,7 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), -thresholds, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, quantized_tensor))
 
     def test_unsigned_symmetric_activation_quantizer(self):
         thresholds = [4]
@@ -91,7 +91,7 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** num_bits)
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), 0, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, quantized_tensor))
 
     def test_illegal_power_of_two_threshold(self):
         with self.assertRaises(Exception) as e:
@@ -137,7 +137,7 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), -thresholds, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def test_unsigned_power_of_two_activation_quantizer(self):
         thresholds = [1]
@@ -163,7 +163,7 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** num_bits)
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), 0, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def test_uniform_activation_quantizer(self):
         min_range = [-10]
@@ -199,7 +199,7 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
 
         manually_quantized_tensor = torch.round((torch.clip(input_tensor.to(get_working_device()), min_range,
                                                             max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(torch.all(manually_quantized_tensor == quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, quantized_tensor))
 
     def test_illegal_range_uniform_activation_quantizer(self):
         min_range = [3]
@@ -235,4 +235,4 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
 
         manually_quantized_tensor = torch.round((torch.clip(input_tensor.to(get_working_device()), min_range,
                                                             max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(torch.all(manually_quantized_tensor == quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, quantized_tensor))

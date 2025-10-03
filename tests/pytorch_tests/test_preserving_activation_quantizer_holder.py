@@ -119,7 +119,7 @@ class TestPytorchPreservingActivationQuantizationHolder(unittest.TestCase):
 
                 try:
                     torch.save(fx_model, tmp_pth_file)
-                    loaded_model = torch.load(tmp_pth_file)
+                    loaded_model = torch.load(tmp_pth_file, weights_only=False)
                     output_tensor = loaded_model(x)
 
                     # Output value is the same as the quanization holder before saving.

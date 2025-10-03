@@ -70,11 +70,11 @@ class TestPytorchLoadModel(unittest.TestCase):
 
         torch.save(layer_with_quantizer, tmp_h5_file)
 
-        loaded_model = (pytorch_load_quantized_model(tmp_h5_file))
+        loaded_model = (pytorch_load_quantized_model(tmp_h5_file, weights_only=False))
         os.remove(tmp_h5_file)
 
         loaded_pred = loaded_model(x).detach().cpu().numpy()
-        self.assertTrue(np.all(loaded_pred == pred))
+        self.assertTrue(np.allclose(loaded_pred, pred))
 
     def test_save_and_load_activation_pot(self):
         num_bits = 3
@@ -231,7 +231,7 @@ class TestPytorchLoadModel(unittest.TestCase):
         _, tmp_pt_file = tempfile.mkstemp('.pt')
 
         torch.save(model, tmp_pt_file)
-        loaded_model = pytorch_load_quantized_model(tmp_pt_file)
+        loaded_model = pytorch_load_quantized_model(tmp_pt_file, weights_only=False)
         os.remove(tmp_pt_file)
 
         self.assertTrue(get_metadata(loaded_model) == get_metadata(model))

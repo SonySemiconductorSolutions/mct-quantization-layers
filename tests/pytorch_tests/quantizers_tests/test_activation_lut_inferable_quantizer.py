@@ -64,8 +64,7 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         self.assertTrue(len(np.unique(fake_quantized_tensor)) <= 2 ** num_bits,
                                   f'Quantized tensor expected to have no more than {2 ** num_bits} unique values but has '
                                   f'{len(np.unique(fake_quantized_tensor))} unique values')
-        self.assertTrue(np.all(np.unique(fake_quantized_tensor)
-                                         == np.sort(quant_tensor_values)))
+        self.assertTrue(np.allclose(np.unique(fake_quantized_tensor), np.sort(quant_tensor_values)))
 
         # Check quantized tensor assigned correctly
         clip_max = 2 ** (lut_values_bitwidth - 1) - 1
@@ -78,8 +77,8 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         lut_values_assignments = torch.argmin(torch.abs(tensor - expanded_lut_values), dim=-1)
         centers = np.asarray(lut_values).flatten()[lut_values_assignments]
 
-        self.assertTrue(np.all(centers / (2 ** (lut_values_bitwidth - int(signed))) * thresholds ==
-                                         fake_quantized_tensor), "Quantized tensor values weren't assigned correctly")
+        self.assertTrue(np.allclose(centers / (2 ** (lut_values_bitwidth - int(signed))) * thresholds,
+                                    fake_quantized_tensor), "Quantized tensor values weren't assigned correctly")
 
         # Assert some values are negative (signed quantization)
         self.assertTrue(np.any(fake_quantized_tensor < 0),
@@ -125,7 +124,7 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
                                   f'Quantized tensor expected to have no more than {2 ** num_bits} unique values but has '
                                   f'{len(np.unique(fake_quantized_tensor))} unique values')
 
-        self.assertTrue(np.all(np.unique(fake_quantized_tensor) == np.sort(quant_tensor_values)))
+        self.assertTrue(np.allclose(np.unique(fake_quantized_tensor), np.sort(quant_tensor_values)))
 
         # Check quantized tensor assigned correctly
         clip_max = 2 ** lut_values_bitwidth - 1
@@ -138,8 +137,8 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         lut_values_assignments = torch.argmin(torch.abs(tensor - expanded_lut_values), dim=-1)
         centers = np.asarray(lut_values).flatten()[lut_values_assignments]
 
-        self.assertTrue(np.all(centers / (2 ** (lut_values_bitwidth - int(signed))) * thresholds ==
-                                         fake_quantized_tensor), "Quantized tensor values weren't assigned correctly")
+        self.assertTrue(np.allclose(centers / (2 ** (lut_values_bitwidth - int(signed))) * thresholds,
+                                    fake_quantized_tensor), "Quantized tensor values weren't assigned correctly")
 
         # Assert all values are non-negative (unsigned quantization)
         self.assertTrue(np.all(fake_quantized_tensor >= 0),

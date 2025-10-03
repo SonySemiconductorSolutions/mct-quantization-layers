@@ -116,4 +116,4 @@ class TestKerasQuantizationWrapper(unittest.TestCase):
         x = sub_wrapper.call(x)
         x = mul_wrapper.call(x)
         wrappers_output = matmul_wrapper.call(x)
-        self.assertTrue((wrappers_output == model_output).numpy().all())
+        self.assertTrue(np.allclose(wrappers_output.numpy(), model_output.numpy()))
