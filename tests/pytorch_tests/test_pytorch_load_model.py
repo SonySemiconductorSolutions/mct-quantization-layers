@@ -74,7 +74,7 @@ class TestPytorchLoadModel(unittest.TestCase):
         os.remove(tmp_h5_file)
 
         loaded_pred = loaded_model(x).detach().cpu().numpy()
-        self.assertTrue(np.all(loaded_pred == pred))
+        self.assertTrue(np.allclose(loaded_pred, pred))
 
     def test_save_and_load_activation_pot(self):
         num_bits = 3

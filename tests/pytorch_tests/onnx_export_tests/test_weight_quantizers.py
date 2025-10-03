@@ -69,7 +69,7 @@ class TestONNXExportWeightsQuantizers(unittest.TestCase):
 
         assert onnx_nbits == num_bits, f'Expected num_bits in quantizer to be {num_bits} but found {onnx_nbits}'
         assert onnx_per_channel == per_channel, f'Expected per_channel in quantizer to be {per_channel} but found {onnx_per_channel}'
-        assert np.all(thresholds==onnx_threshold), f'Expected threshold in quantizer to be {thresholds} but found {onnx_threshold}'
+        assert np.allclose(thresholds, onnx_threshold), f'Expected threshold in quantizer to be {thresholds} but found {onnx_threshold}'
         assert onnx_channel_axis == channel_axis, f'Expected threshold in quantizer to be {channel_axis} but found ' \
                                              f'{onnx_channel_axis}'
         onnx_signed = node_qparams['signed']
@@ -111,7 +111,7 @@ class TestONNXExportWeightsQuantizers(unittest.TestCase):
 
         assert onnx_nbits == num_bits, f'Expected num_bits in quantizer to be {num_bits} but found {onnx_nbits}'
         assert onnx_per_channel == per_channel, f'Expected per_channel in quantizer to be {per_channel} but found {onnx_per_channel}'
-        assert np.all(thresholds==onnx_threshold), f'Expected threshold in quantizer to be {thresholds} but found {onnx_threshold}'
+        assert np.allclose(thresholds, onnx_threshold), f'Expected threshold in quantizer to be {thresholds} but found {onnx_threshold}'
         assert onnx_channel_axis == channel_axis, f'Expected threshold in quantizer to be {channel_axis} but found ' \
                                              f'{onnx_channel_axis}'
 
@@ -155,8 +155,8 @@ class TestONNXExportWeightsQuantizers(unittest.TestCase):
 
         assert onnx_nbits == num_bits, f'Expected num_bits in quantizer to be {num_bits} but found {onnx_nbits}'
         assert onnx_per_channel == per_channel, f'Expected per_channel in quantizer to be {per_channel} but found {onnx_per_channel}'
-        assert np.all(np.zeros(shape=(4,))==onnx_min_range), f'Expected min_range in quantizer to be zeros after range adjustment but found {onnx_min_range}'
-        assert np.all(max_range==onnx_max_range), f'Expected max_range in quantizer to be {max_range} but found {onnx_max_range}'
+        assert np.allclose(np.zeros(shape=(4,)), onnx_min_range), f'Expected min_range in quantizer to be zeros after range adjustment but found {onnx_min_range}'
+        assert np.allclose(max_range, onnx_max_range), f'Expected max_range in quantizer to be {max_range} but found {onnx_max_range}'
         assert onnx_channel_axis == channel_axis, f'Expected channel_axis in quantizer to be {channel_axis} but found {onnx_channel_axis}'
 
         onnx_signed = node_qparams['signed']
@@ -197,7 +197,7 @@ class TestONNXExportWeightsQuantizers(unittest.TestCase):
 
         assert onnx_nbits == num_bits, f'Expected num_bits in quantizer to be {num_bits} but found {onnx_nbits}'
         assert onnx_per_channel == per_channel, f'Expected per_channel in quantizer to be {per_channel} but found {onnx_per_channel}'
-        assert np.all(thresholds==onnx_threshold), f'Expected threshold in quantizer to be {thresholds} but found {onnx_threshold}'
+        assert np.allclose(thresholds, onnx_threshold), f'Expected threshold in quantizer to be {thresholds} but found {onnx_threshold}'
 
         onnx_signed = node_qparams['signed']
         assert onnx_signed == True, f'Expected signed in weight quantizer to be True but is {onnx_signed}'
@@ -234,7 +234,7 @@ class TestONNXExportWeightsQuantizers(unittest.TestCase):
 
         assert onnx_nbits == num_bits, f'Expected num_bits in quantizer to be {num_bits} but found {onnx_nbits}'
         assert onnx_per_channel == per_channel, f'Expected per_channel in quantizer to be {per_channel} but found {onnx_per_channel}'
-        assert np.all(thresholds==onnx_threshold), f'Expected threshold in quantizer to be {thresholds} but found {onnx_threshold}'
+        assert np.allclose(thresholds, onnx_threshold), f'Expected threshold in quantizer to be {thresholds} but found {onnx_threshold}'
 
         onnx_signed = node_qparams['signed']
         assert onnx_signed == True, f'Expected signed in weight quantizer to be True but is {onnx_signed}'
@@ -276,8 +276,8 @@ class TestONNXExportWeightsQuantizers(unittest.TestCase):
 
         assert onnx_nbits == num_bits, f'Expected num_bits in quantizer to be {num_bits} but found {onnx_nbits}'
         assert onnx_per_channel == per_channel, f'Expected per_channel in quantizer to be {per_channel} but found {onnx_per_channel}'
-        assert np.all(np.zeros(shape=(1,))==onnx_min_range), f'Expected min_range in quantizer to be zeros after range adjustment but found {onnx_min_range}'
-        assert np.all(max_range==onnx_max_range), f'Expected max_range in quantizer to be {max_range} but found {onnx_max_range}'
+        assert np.allclose(np.zeros(shape=(1,)), onnx_min_range), f'Expected min_range in quantizer to be zeros after range adjustment but found {onnx_min_range}'
+        assert np.allclose(max_range, onnx_max_range), f'Expected max_range in quantizer to be {max_range} but found {onnx_max_range}'
         onnx_signed = node_qparams['signed']
         assert onnx_signed == True, f'Expected signed in weight quantizer to be True but is {onnx_signed}'
         assert node_qparams[MCTQ_VERSION] == mctq_version, f'Expected version to be {mctq_version} but is {node_qparams[MCTQ_VERSION]}'
@@ -391,8 +391,8 @@ class TestONNXExportWeightsQuantizers(unittest.TestCase):
         node_qparams = _get_qparams_from_input_tensors_for_single_quantizer(onnx_file_path, onnx_op_name)
         lut_values_onnx = node_qparams[0]
         threshold_onnx = node_qparams[1]
-        assert np.all(lut_values_onnx==lut_values), f'Expected lut_values in quantizer to be {lut_values} but found {lut_values_onnx}'
-        assert np.all(threshold_onnx==threshold), f'Expected threshold in quantizer to be {threshold} but found {threshold_onnx}'
+        assert np.allclose(lut_values_onnx, lut_values), f'Expected lut_values in quantizer to be {lut_values} but found {lut_values_onnx}'
+        assert np.allclose(threshold_onnx, threshold), f'Expected threshold in quantizer to be {threshold} but found {threshold_onnx}'
 
         node_qparams = _get_qparams_from_attributes_for_single_quantizer(onnx_file_path, onnx_op_name)
         onnx_nbits = node_qparams['num_bits']

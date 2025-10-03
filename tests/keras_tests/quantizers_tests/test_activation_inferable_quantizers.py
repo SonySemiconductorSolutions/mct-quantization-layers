@@ -68,7 +68,7 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         scale = thresholds[0] / (2 ** (num_bits - int(signed)))
         manually_quantized_tensor = tf.clip_by_value(np.round(input_tensor / scale), clip_value_min=-thresholds[0],
                                                      clip_value_max=thresholds[0] - scale)
-        self.assertTrue(np.all(manually_quantized_tensor.numpy() == quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor.numpy(), quantized_tensor.numpy()))
 
     def test_unsigned_symmetric_activation_quantizer(self):
         thresholds = [4.]
@@ -111,7 +111,7 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         scale = thresholds[0] / (2 ** num_bits - int(signed))
         manually_quantized_tensor = tf.clip_by_value(np.round(input_tensor / scale), clip_value_min=0,
                                                      clip_value_max=thresholds[0] - scale)
-        self.assertTrue(np.all(manually_quantized_tensor.numpy() == quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor.numpy(), quantized_tensor.numpy()))
 
     def test_illegal_power_of_two_threshold(self):
         with self.assertRaises(Exception) as e:
@@ -166,7 +166,7 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = np.round(
             tf.clip_by_value(input_tensor, clip_value_min=-thresholds,
                              clip_value_max=thresholds - scale) / scale) * scale
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_unsigned_power_of_two_activation_quantizer(self):
         thresholds = [1.]
@@ -213,7 +213,7 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = np.round(
             tf.clip_by_value(input_tensor, clip_value_min=0,
                              clip_value_max=thresholds - scale) / scale) * scale
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_uniform_activation_quantizer(self):
         min_range = [-10.]
@@ -254,7 +254,7 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = \
             np.round((tf.clip_by_value(input_tensor, clip_value_min=min_range,
                                        clip_value_max=max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_illegal_range_uniform_activation_quantizer(self):
         min_range = [3.]

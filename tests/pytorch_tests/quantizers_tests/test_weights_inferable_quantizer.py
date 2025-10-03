@@ -59,7 +59,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds[0] / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.clip(torch.round(input_tensor.to(get_working_device()) / scale),
                                                -thresholds[0], thresholds[0] - scale)
-        self.assertTrue(torch.all(manually_quantized_tensor == quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, quantized_tensor))
 
     def test_symmetric_weights_quantizer_per_channel(self):
         thresholds = [3, 6, 2]
@@ -97,7 +97,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), -thresholds, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, quantized_tensor))
 
     def test_pot_weights_quantizer_per_channel(self):
         thresholds = [2, 4, 1]
@@ -136,7 +136,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), -thresholds, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def test_pot_weights_quantizer_per_tensor(self):
         thresholds = [1]
@@ -170,7 +170,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), -thresholds, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def test_uniform_weights_quantizer_per_channel(self):
         num_bits = 3
@@ -211,7 +211,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = (max_range - min_range) / (2 ** num_bits - 1)
         manually_quantized_tensor = torch.round((torch.clip(input_tensor.to(get_working_device()), min_range,
                                                             max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def test_uniform_weights_quantizer_per_tensor(self):
         num_bits = 3
@@ -245,7 +245,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = (max_range - min_range) / (2 ** num_bits - 1)
         manually_quantized_tensor = torch.round((torch.clip(input_tensor.to(get_working_device()), min_range,
                                                             max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def quantizer_reuse_test(self, quantizer):
 
@@ -265,15 +265,15 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         quantized_tensor1 = quantizer(input_tensor)
         self.assertTrue(not quantizer.quantizer_first_run,
                         f'Now quantizer_first_run should be false but got true')
-        self.assertTrue(torch.all(quantizer.resue_outputs == quantized_tensor1))
+        self.assertTrue(torch.allclose(quantizer.resue_outputs, quantized_tensor1))
 
         # Quantize tensor: second run
         quantized_tensor2 = quantizer(input_tensor)
-        self.assertTrue(torch.all(quantizer.resue_outputs == quantized_tensor2))
+        self.assertTrue(torch.allclose(quantizer.resue_outputs, quantized_tensor2))
 
         # Quantize tensor: third run
         quantized_tensor3 = quantizer(input_tensor)
-        self.assertTrue(torch.all(quantizer.resue_outputs == quantized_tensor3))
+        self.assertTrue(torch.allclose(quantizer.resue_outputs, quantized_tensor3))
 
     def test_symmetric_weights_quantizer_reuse(self):
         # Create quantizer

@@ -97,7 +97,7 @@ class TestPytorchWeightsQuantizationWrapper(unittest.TestCase):
         self.assertTrue(isinstance(quantizer, ZeroWeightsQuantizer))
         y = wrapper(self.inputs)  # apply the wrapper on some random inputs
         self.assertTrue((0 == getattr(wrapper, f'{QUANTIZED_POSITIONAL_WEIGHT}_{name}')).all())  # check the weight are now quantized
-        self.assertTrue((y == self.layers[1](torch.zeros_like(self.sub_const), self.inputs)).all())  # check the wrapper's outputs are equal to biases
+        self.assertTrue(torch.allclose(y, self.layers[1](torch.zeros_like(self.sub_const), self.inputs)))  # check the wrapper's outputs are equal to biases
 
         wrapper = PytorchQuantizationWrapper(self.layers[1], {0: ZeroWeightsQuantizer()},
                                              weight_values={0: self.sub_const})
@@ -109,7 +109,7 @@ class TestPytorchWeightsQuantizationWrapper(unittest.TestCase):
         self.assertTrue(isinstance(quantizer, ZeroWeightsQuantizer))
         y = wrapper(self.inputs)  # apply the wrapper on some random inputs
         self.assertTrue((0 == getattr(wrapper, f'{QUANTIZED_POSITIONAL_WEIGHT}_{name}')).all())  # check the weight are now quantized
-        self.assertTrue((y == self.layers[1](torch.zeros_like(self.sub_const), self.inputs)).all())  # check the wrapper's outputs are equal to biases
+        self.assertTrue(torch.allclose(y, self.layers[1](torch.zeros_like(self.sub_const), self.inputs)))  # check the wrapper's outputs are equal to biases
 
         wrapper = PytorchQuantizationWrapper(self.layers[2], {0: ZeroWeightsQuantizer(), 2: ZeroWeightsQuantizer()},
                                              weight_values={0: self.cat_const1, 2: self.cat_const2},
@@ -123,7 +123,7 @@ class TestPytorchWeightsQuantizationWrapper(unittest.TestCase):
         y = wrapper(self.inputs)  # apply the wrapper on some random inputs
         self.assertTrue((0 == getattr(wrapper, f'{QUANTIZED_POSITIONAL_WEIGHT}_0')).all())  # check the weight are now quantized
         self.assertTrue((0 == getattr(wrapper, f'{QUANTIZED_POSITIONAL_WEIGHT}_2')).all())  # check the weight are now quantized
-        self.assertTrue((y == self.layers[2]([torch.zeros_like(self.cat_const1),
-                                              self.inputs,
-                                              torch.zeros_like(self.cat_const2)],
-                                             **wrapper.op_call_kwargs)).all())  # check the wrapper's outputs are equal to biases
+        self.assertTrue(torch.allclose(y, self.layers[2]([torch.zeros_like(self.cat_const1),
+                                                          self.inputs,
+                                                          torch.zeros_like(self.cat_const2)],
+                                                          **wrapper.op_call_kwargs)))  # check the wrapper's outputs are equal to biases

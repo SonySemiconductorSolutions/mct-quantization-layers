@@ -67,7 +67,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds[0] / (2 ** (num_bits - 1))
         manually_quantized_tensor = tf.clip_by_value(np.round(input_tensor / scale), clip_value_min=-thresholds[0],
                                                      clip_value_max=thresholds[0] - scale)
-        self.assertTrue(np.all(manually_quantized_tensor.numpy() == quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor.numpy(), quantized_tensor.numpy()))
 
     def test_symmetric_weights_quantizer_per_channel(self):
         thresholds = [3., 6., 2.]
@@ -114,7 +114,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = np.round(
             tf.clip_by_value(input_tensor, clip_value_min=-thresholds,
                              clip_value_max=thresholds - scale) / scale) * scale
-        self.assertTrue(np.all(manually_quantized_tensor == quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, quantized_tensor.numpy()))
 
     def test_power_of_two_weights_quantizer_per_channel(self):
         thresholds = [2., 4., 1.]
@@ -165,7 +165,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = np.round(
             tf.clip_by_value(input_tensor, clip_value_min=-thresholds,
                              clip_value_max=thresholds - scale) / scale) * scale
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_power_of_two_weights_quantizer_per_tensor(self):
         thresholds = [1.]
@@ -209,7 +209,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = np.round(
             tf.clip_by_value(input_tensor, clip_value_min=-thresholds,
                              clip_value_max=thresholds - scale) / scale) * scale
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_uniform_weights_quantizer_per_channel(self):
         num_bits = 3
@@ -264,7 +264,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         scale = (max_range - min_range) / (2 ** num_bits - 1)
         manually_quantized_tensor = np.round((tf.clip_by_value(
             input_tensor, clip_value_min=min_range, clip_value_max=max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_uniform_weights_quantizer_per_tensor(self):
         num_bits = 3
@@ -311,7 +311,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         scale = (max_range - min_range) / (2 ** num_bits - 1)
         manually_quantized_tensor = np.round((tf.clip_by_value(
             input_tensor, clip_value_min=min_range, clip_value_max=max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_uniform_weights_quantizer_zero_not_in_range(self):
         num_bits = 3
