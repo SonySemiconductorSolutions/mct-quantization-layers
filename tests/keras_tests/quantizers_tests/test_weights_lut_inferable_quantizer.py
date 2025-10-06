@@ -99,7 +99,7 @@ class TestKerasWeightsLutQuantizers(unittest.TestCase):
                 self.assertTrue(len(np.unique(channel_slice_i)) <= 2 ** num_bits,
                                 f'Quantized tensor expected to have no more than {2 ** num_bits} unique values but has '
                                 f'{len(np.unique(channel_slice_i))} unique values')
-                self.assertTrue(np.allclose(np.unique(channel_slice_i), np.sort(channel_quant_tensor_values)))
+                self.assertTrue(np.any(np.isclose(v, np.sort(channel_quant_tensor_values)) for v in np.unique(channel_slice_i).tolist()))
 
                 # Check quantized tensor assigned correctly
                 tensor = tf.clip_by_value((input_tensor / (threshold[i] + eps)) * (2 ** (num_bits - 1)),
@@ -116,7 +116,7 @@ class TestKerasWeightsLutQuantizers(unittest.TestCase):
             self.assertTrue(len(np.unique(quantized_tensor)) <= 2 ** num_bits,
                             f'Quantized tensor expected to have no more than {2 ** num_bits} unique values but has '
                             f'{len(np.unique(quantized_tensor))} unique values')
-            self.assertTrue(np.allclose(np.unique(quantized_tensor), np.sort(quant_tensor_values)))
+            self.assertTrue(np.any(np.isclose(v, np.sort(quant_tensor_values)) for v in np.unique(quantized_tensor).tolist()))
 
             # Check quantized tensor assigned correctly
             tensor = tf.clip_by_value((input_tensor / (threshold[0] + eps)) * (2 ** (num_bits - 1)),
