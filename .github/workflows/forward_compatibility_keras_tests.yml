@@ -16,7 +16,7 @@ on:
         description: 'TF version'
         required: true
         type: string
-        default: '2.12.*'
+        default: '2.14.*'
 
 jobs:
   run-tensorflow-tests:
@@ -41,6 +41,7 @@ jobs:
           export PYTHONPATH="$PWD:${PYTHONPATH}"
           echo "Updated PYTHONPATH: $PYTHONPATH"
           cd ..
+          python -c "import mct_quantizers; print(mct_quantizers.__version__)"
           python tests/compatibility_tests/keras_comp_tests/compatibility_weights_save_model_test_suite.py ${{  inputs.load_version  }}
           python tests/compatibility_tests/keras_comp_tests/compatibility_activation_save_model_test_suite.py ${{  inputs.load_version  }}
       - name: Checkout to MCT Quantizers requested tag for loading test models
@@ -53,5 +54,6 @@ jobs:
           export PYTHONPATH="$PWD:${PYTHONPATH}"
           echo "Updated PYTHONPATH: $PYTHONPATH"
           cd ..
+          python -c "import mct_quantizers; print(mct_quantizers.__version__)"
           python tests/compatibility_tests/keras_comp_tests/compatibility_weights_load_model_test_suite.py ${{  inputs.load_version  }}
           python tests/compatibility_tests/keras_comp_tests/compatibility_activation_load_model_test_suite.py ${{  inputs.load_version  }}

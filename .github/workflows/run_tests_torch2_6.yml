@@ -1,4 +1,4 @@
-name: Run Backward Compatibility Test - Pytorch 2.3 MCTQ v1.4.0
+name: Run Tests - PyTorch 2.6
 on:
   workflow_dispatch: # Allow manual triggers
   schedule:
@@ -10,9 +10,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  run-comp-torch-2_3-v1_4:
-    uses: ./.github/workflows/compatibility_torch_tests.yml
+  run-pytorch-2_6:
+    uses: ./.github/workflows/run_pytorch_tests.yml
     with:
-      save_version: "v1.4.0"
-      python_version: "3.10"
-      torch_version: "2.3.*"
+      torch-version: "2.6.*"

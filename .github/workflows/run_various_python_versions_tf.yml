@@ -1,0 +1,32 @@
+name: Test Python Version(TensorFlow)
+
+on:
+  workflow_dispatch: # Allow manual triggers
+  schedule:
+    - cron: 0 0 * * *
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install tensorflow==2.15.*
+      - name: Run unittests
+        run: python -m unittest discover -s tests/keras_tests -v
