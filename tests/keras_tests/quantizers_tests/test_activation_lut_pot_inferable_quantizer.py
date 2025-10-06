@@ -50,8 +50,10 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         self.assertTrue(quantizer_config['lut_values_bitwidth'] == lut_values_bitwidth)
         self.assertTrue(quantizer_config['eps'] == eps)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         quantized_tensor = quantizer(input_tensor)
 
         # Using a signed quantization, so we expect all values to be between -abs(max(threshold))
@@ -77,7 +79,7 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
 
         quant_tensor_values = (lut_values / (2 ** (lut_values_bitwidth - int(signed)))) * thresholds
 
-        self.assertTrue(np.any(np.isclose(v, np.sort(quant_tensor_values)) for v in np.unique(quantized_tensor).tolist()))
+        self.assertTrue(np.allclose(np.unique(quantized_tensor), np.sort(quant_tensor_values)))
 
         # Check quantized tensor assigned correctly
         tensor = tf.clip_by_value((input_tensor / (thresholds + eps)) * (2 ** (num_bits - 1)),
@@ -120,8 +122,10 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         self.assertTrue(quantizer_config['lut_values_bitwidth'] == lut_values_bitwidth)
         self.assertTrue(quantizer_config['eps'] == eps)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         quantized_tensor = quantizer(input_tensor)
 
         # Using a unsigned quantization, so we expect all values to be between 0
@@ -146,7 +150,7 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
 
         quant_tensor_values = (lut_values / (2 ** lut_values_bitwidth)) * thresholds
 
-        self.assertTrue(np.any(np.isclose(v, np.sort(quant_tensor_values)) for v in np.unique(quantized_tensor).tolist()))
+        self.assertTrue(np.allclose(np.unique(quantized_tensor), np.sort(quant_tensor_values)))
 
         # Check quantized tensor assigned correctly
         tensor = tf.clip_by_value((input_tensor / (thresholds + eps)) * (2 ** lut_values_bitwidth),

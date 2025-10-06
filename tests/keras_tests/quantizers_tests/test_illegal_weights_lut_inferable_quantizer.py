@@ -168,8 +168,10 @@ class BaseKerasWeightsIllegalLutQuantizerTest(unittest.TestCase):
             perm_vec[channel_axis] = input_rank - 1
             perm_vec[input_rank - 1] = channel_axis
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, dtype=tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
 
         # change the input only when channel_axis is not the last axis
         input_tensor = tf.transpose(input_tensor, perm=perm_vec)
@@ -213,7 +215,7 @@ class BaseKerasWeightsIllegalLutQuantizerTest(unittest.TestCase):
                 self.assertTrue(len(np.unique(channel_slice_i)) <= 2 ** num_bits,
                                           f'Quantized tensor expected to have no more than {2 ** num_bits} unique values but has '
                                           f'{len(np.unique(channel_slice_i))} unique values')
-                self.assertTrue(np.any(np.isclose(v, np.sort(channel_quant_tensor_values)) for v in np.unique(channel_slice_i).tolist()))
+                self.assertTrue(np.allclose(np.unique(channel_slice_i), np.sort(channel_quant_tensor_values)))
 
                 # Check quantized tensor assigned correctly
                 tensor = tf.clip_by_value((input_tensor / (threshold[i] + eps)) * (2 ** (num_bits - 1)),
@@ -231,7 +233,7 @@ class BaseKerasWeightsIllegalLutQuantizerTest(unittest.TestCase):
             self.assertTrue(len(np.unique(quantized_tensor)) <= 2 ** num_bits,
                                       f'Quantized tensor expected to have no more than {2 ** num_bits} unique values but has '
                                       f'{len(np.unique(quantized_tensor))} unique values')
-            self.assertTrue(np.any(np.isclose(v, np.sort(quant_tensor_values)) for v in np.unique(quantized_tensor).tolist()))
+            self.assertTrue(np.allclose(np.unique(quantized_tensor), np.sort(quant_tensor_values)))
 
             # Check quantized tensor assigned correctly
             tensor = tf.clip_by_value((input_tensor / (threshold[0] + eps)) * (2 ** (num_bits - 1)),

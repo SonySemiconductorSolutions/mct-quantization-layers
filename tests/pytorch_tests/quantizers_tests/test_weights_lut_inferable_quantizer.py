@@ -34,8 +34,10 @@ class TestPytorchWeightsLutQuantizers(unittest.TestCase):
                                         lut_values_bitwidth=lut_values_bitwidth,
                                         input_rank=input_rank)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 3, 3, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 3, 3, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 3, 3, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # Using a signed quantization, so we expect all values to be between -abs(max(threshold))
@@ -72,7 +74,7 @@ class TestPytorchWeightsLutQuantizers(unittest.TestCase):
                 self.assertTrue(len(np.unique(channel_slice_i)) <= 2 ** num_bits,
                                           f'Quantized tensor expected to have no more than {2 ** num_bits} unique values but has '
                                           f'{len(np.unique(channel_slice_i))} unique values')
-                self.assertTrue(np.any(np.isclose(v, np.sort(channel_quant_tensor_values)) for v in np.unique(channel_slice_i).tolist()))
+                self.assertTrue(np.allclose(np.unique(channel_slice_i), np.sort(channel_quant_tensor_values)))
 
                 # Check quantized tensor assigned correctly
                 tensor = torch.clip((input_tensor / threshold[i]) * (2 ** (lut_values_bitwidth - 1)),
@@ -91,7 +93,7 @@ class TestPytorchWeightsLutQuantizers(unittest.TestCase):
             self.assertTrue(len(np.unique(fake_quantized_tensor)) <= 2 ** num_bits,
                                       f'Quantized tensor expected to have no more than {2 ** num_bits} unique values but has '
                                       f'{len(np.unique(fake_quantized_tensor))} unique values')
-            self.assertTrue(np.any(np.isclose(v, np.sort(quant_tensor_values)) for v in np.unique(fake_quantized_tensor).tolist()))
+            self.assertTrue(np.allclose(np.unique(fake_quantized_tensor), np.sort(quant_tensor_values)))
 
             # Check quantized tensor assigned correctly
             tensor = torch.clip((input_tensor / np.asarray(threshold)) * (2 ** (lut_values_bitwidth - 1)),
