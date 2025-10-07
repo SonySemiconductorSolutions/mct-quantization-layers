@@ -51,8 +51,10 @@ class TestPytorchPreservingActivationQuantizationHolderInference(unittest.TestCa
             quantizer = quantizer_class(**quantizer_args)
             model = PytorchPreservingActivationQuantizationHolder(quantizer, quantization_bypass)
 
-            # Initialize a random input to quantize between -50 to 50.
-            input_tensor = torch.from_numpy(np.random.rand(1, 3, 50, 50). astype(np.float32) * 100 - 50, )
+            # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+            input_tensor = torch.rand(1, 3, 50, 50) * 50
+            signs = torch.from_numpy(np.where(np.indices((1, 3, 50, 50)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+            input_tensor = input_tensor * signs
             # Quantize tensor
             quantized_tensor = model(input_tensor)
 

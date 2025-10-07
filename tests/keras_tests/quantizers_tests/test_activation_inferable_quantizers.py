@@ -43,8 +43,10 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         self.assertTrue(quantizer_config['threshold'] == thresholds)
         self.assertTrue(quantizer_config['signed'] == signed)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         # Quantize tensor
         quantized_tensor = quantizer(input_tensor)
 
@@ -87,8 +89,10 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         self.assertTrue(quantizer_config['threshold'] == thresholds)
         self.assertTrue(quantizer_config['signed'] == signed)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         # Quantize tensor
         quantized_tensor = quantizer(input_tensor)
 
@@ -144,8 +148,10 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
 
         self.assertTrue(np.all(quantizer.min_range == -1 * thresholds))
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         self.assertTrue(np.max(fake_quantized_tensor) < thresholds[
@@ -191,8 +197,10 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
 
         self.assertTrue(np.all(quantizer.min_range == [0]))
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         self.assertTrue(np.max(fake_quantized_tensor) < thresholds[
@@ -232,8 +240,10 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         self.assertTrue(quantizer_config['min_range'] == min_range)
         self.assertTrue(quantizer_config['max_range'] == max_range)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 4, 50) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         # We expect tensor values values to be between min_range to max_range
@@ -272,8 +282,10 @@ class TestKerasActivationInferableQuantizers(unittest.TestCase):
         # self.assertTrue(quantizer_config['min_range'] == min_range)
         # self.assertTrue(quantizer_config['max_range'] == max_range)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 4, 50) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         # We expect each channel values to be between min_range to max_range for each channel
