@@ -40,8 +40,10 @@ class TestKerasActivationQuantizationHolder(unittest.TestCase):
                                                           signed=signed)
         model = keras.Sequential([KerasActivationQuantizationHolder(quantizer)])
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         # Quantize tensor
         quantized_tensor = model(input_tensor)
 

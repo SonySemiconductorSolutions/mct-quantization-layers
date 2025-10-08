@@ -35,8 +35,10 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
                                                           threshold=thresholds,
                                                           signed=True)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 50, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 50, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # The maximal threshold is 4 using a signed quantization, so we expect all values to be in this range
@@ -68,8 +70,10 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
                                                           threshold=thresholds,
                                                           signed=False)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 50, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 50, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # The maximal threshold is 4 using a signed quantization, so we expect all values to be in this range
@@ -116,8 +120,10 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
                                                     signed=True,
                                                     threshold=thresholds)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 3, 3, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 3, 3, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 3, 3, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device())).dequantize()
 
         assert torch.max(
@@ -146,8 +152,10 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
                                                     signed=False,
                                                     threshold=thresholds)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 3, 3, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 3, 3, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 3, 3, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device())).dequantize()
 
         assert torch.max(
@@ -173,8 +181,10 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
                                                         min_range=min_range,
                                                         max_range=max_range)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 50, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 50, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # The maximal threshold is 4 using a signed quantization, so we expect all values to be in this range
@@ -209,8 +219,10 @@ class TestPytorchActivationInferableQuantizers(unittest.TestCase):
                                                         min_range=min_range,
                                                         max_range=max_range)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 50, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 50, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # The maximal threshold is 4 using a signed quantization, so we expect all values to be in this range

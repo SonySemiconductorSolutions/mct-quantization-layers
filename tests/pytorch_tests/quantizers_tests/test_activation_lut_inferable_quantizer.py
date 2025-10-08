@@ -38,8 +38,10 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
                                                        lut_values_bitwidth,
                                                        threshold=thresholds)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 3, 3, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 3, 3, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 3, 3, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # Using a signed quantization, so we expect all values to be between -abs(max(threshold))
@@ -98,8 +100,10 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
                                                        lut_values_bitwidth,
                                                        threshold=thresholds)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 3, 3, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 3, 3, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 3, 3, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # Using a unsigned quantization, so we expect all values to be between 0
