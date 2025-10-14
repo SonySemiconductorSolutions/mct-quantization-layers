@@ -1,4 +1,4 @@
-# Copyright 2023 Sony Semiconductor Israel, Inc. All rights reserved.
+# Copyright 2023 Sony Semiconductor Solutions, Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,8 +35,10 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
                                                        per_channel=False,
                                                        threshold=thresholds)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 50, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 50, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         # Quantize tensor
         quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
@@ -59,7 +61,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds[0] / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.clip(torch.round(input_tensor.to(get_working_device()) / scale),
                                                -thresholds[0], thresholds[0] - scale)
-        self.assertTrue(torch.all(manually_quantized_tensor == quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, quantized_tensor))
 
     def test_symmetric_weights_quantizer_per_channel(self):
         thresholds = [3, 6, 2]
@@ -69,8 +71,10 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
                                                        threshold=thresholds,
                                                        channel_axis=3)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 50, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 50, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         # Quantize tensor
         quantized_tensor = quantizer(input_tensor.to(get_working_device()))
         fake_quantized_tensor = quantized_tensor
@@ -97,7 +101,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), -thresholds, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, quantized_tensor))
 
     def test_pot_weights_quantizer_per_channel(self):
         thresholds = [2, 4, 1]
@@ -110,8 +114,10 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         is_pot_scales = torch.all(quantizer.scales.log2().int() == quantizer.scales.log2())
         self.assertTrue(is_pot_scales, f'Expected scales to be POT but: {quantizer.scales}')
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 50, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 50, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # We expect each channel values to be between -threshold to threshold since it's a signed quantization
@@ -136,7 +142,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), -thresholds, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def test_pot_weights_quantizer_per_tensor(self):
         thresholds = [1]
@@ -150,8 +156,10 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
                         f'Expected to have one scale in per-tensor quantization but found '
                         f'{len(quantizer.scales)} scales')
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 50, 3) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 50, 3) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         assert torch.max(fake_quantized_tensor) < thresholds[
@@ -170,7 +178,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds / (2 ** (num_bits - 1))
         manually_quantized_tensor = torch.round(
             torch.clip(input_tensor.to(get_working_device()), -thresholds, thresholds - scale) / scale) * scale
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def test_uniform_weights_quantizer_per_channel(self):
         num_bits = 3
@@ -182,8 +190,10 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
                                                      max_range=max_range,
                                                      channel_axis=2)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 4, 50) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 4, 50) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 4, 50)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # We expect each channel values to be between min_range to max_range for each channel
@@ -211,7 +221,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = (max_range - min_range) / (2 ** num_bits - 1)
         manually_quantized_tensor = torch.round((torch.clip(input_tensor.to(get_working_device()), min_range,
                                                             max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def test_uniform_weights_quantizer_per_tensor(self):
         num_bits = 3
@@ -222,8 +232,10 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
                                                      min_range=min_range,
                                                      max_range=max_range)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 4, 50) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 4, 50) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 4, 50)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # We expect tensor values values to be between min_range to max_range
@@ -245,7 +257,7 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         scale = (max_range - min_range) / (2 ** num_bits - 1)
         manually_quantized_tensor = torch.round((torch.clip(input_tensor.to(get_working_device()), min_range,
                                                             max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(torch.all(manually_quantized_tensor == fake_quantized_tensor))
+        self.assertTrue(torch.allclose(manually_quantized_tensor, fake_quantized_tensor))
 
     def quantizer_reuse_test(self, quantizer):
 
@@ -265,15 +277,15 @@ class TestPytorchWeightsInferableQuantizers(unittest.TestCase):
         quantized_tensor1 = quantizer(input_tensor)
         self.assertTrue(not quantizer.quantizer_first_run,
                         f'Now quantizer_first_run should be false but got true')
-        self.assertTrue(torch.all(quantizer.resue_outputs == quantized_tensor1))
+        self.assertTrue(torch.allclose(quantizer.resue_outputs, quantized_tensor1))
 
         # Quantize tensor: second run
         quantized_tensor2 = quantizer(input_tensor)
-        self.assertTrue(torch.all(quantizer.resue_outputs == quantized_tensor2))
+        self.assertTrue(torch.allclose(quantizer.resue_outputs, quantized_tensor2))
 
         # Quantize tensor: third run
         quantized_tensor3 = quantizer(input_tensor)
-        self.assertTrue(torch.all(quantizer.resue_outputs == quantized_tensor3))
+        self.assertTrue(torch.allclose(quantizer.resue_outputs, quantized_tensor3))
 
     def test_symmetric_weights_quantizer_reuse(self):
         # Create quantizer

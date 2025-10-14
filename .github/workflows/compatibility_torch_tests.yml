@@ -16,7 +16,7 @@ on:
         description: 'Torch version'
         required: true
         type: string
-        default: '2.0.*'
+        default: '2.3.*'
 
 jobs:
   run-torch-tests:
@@ -29,21 +29,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{  inputs.python_version  }}
-      - name: Modify requirements for Torch 2.2
-        if: startsWith(inputs.torch_version, '2.2')
-        run: |
-          grep -v 'numpy' requirements.txt > temp_requirements.txt
-          echo "numpy<2" >> temp_requirements.txt
-          mv temp_requirements.txt requirements.txt
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install torch==${{  inputs.torch_version  }} onnx onnxruntime "onnxruntime-extensions<0.14"
-      - name: Revert requirements for Torch 2.2
-        if: startsWith(inputs.torch_version, '2.2')
-        run: |
-          git checkout .
+          pip install torch==${{  inputs.torch_version  }} "onnx<1.18" "onnxruntime<1.22" "onnxruntime-extensions<0.14"
       - name: Checkout to MCT Quantizers requested tag for saving test models
         run: |
           git checkout tags/${{  inputs.save_version  }}
@@ -54,6 +44,7 @@ jobs:
           export PYTHONPATH="$PWD:${PYTHONPATH}"
           echo "Updated PYTHONPATH: $PYTHONPATH"
           cd ..
+          python -c "import mct_quantizers; print(mct_quantizers.__version__)"
           python tests/compatibility_tests/torch_comp_tests/compatibility_weights_save_model_test_suite.py ${{  inputs.save_version  }}
           python tests/compatibility_tests/torch_comp_tests/compatibility_activation_save_model_test_suite.py ${{  inputs.save_version  }}
       - name: Checkout to MCT Quantizers latest version
@@ -66,5 +57,6 @@ jobs:
           export PYTHONPATH="$PWD:${PYTHONPATH}"
           echo "Updated PYTHONPATH: $PYTHONPATH"
           cd ..
+          python -c "import mct_quantizers; print(mct_quantizers.__version__)"
           python tests/compatibility_tests/torch_comp_tests/compatibility_weights_load_model_test_suite.py ${{  inputs.save_version  }}
           python tests/compatibility_tests/torch_comp_tests/compatibility_activation_load_model_test_suite.py ${{  inputs.save_version  }}

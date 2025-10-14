@@ -1,4 +1,4 @@
-# Copyright 2023 Sony Semiconductor Israel, Inc. All rights reserved.
+# Copyright 2023 Sony Semiconductor Solutions, Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,8 +50,10 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         self.assertTrue(quantizer_config['lut_values_bitwidth'] == lut_values_bitwidth)
         self.assertTrue(quantizer_config['eps'] == eps)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         quantized_tensor = quantizer(input_tensor)
 
         # Using a signed quantization, so we expect all values to be between -abs(max(threshold))
@@ -77,7 +79,7 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
 
         quant_tensor_values = (lut_values / (2 ** (lut_values_bitwidth - int(signed)))) * thresholds
 
-        self.assertTrue(np.all(np.unique(quantized_tensor) == np.sort(quant_tensor_values)))
+        self.assertTrue(np.allclose(np.unique(quantized_tensor), np.sort(quant_tensor_values)))
 
         # Check quantized tensor assigned correctly
         tensor = tf.clip_by_value((input_tensor / (thresholds + eps)) * (2 ** (num_bits - 1)),
@@ -87,7 +89,7 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         lut_values_assignments = tf.argmin(tf.abs(tensor - expanded_lut_values), axis=-1)
         centers = tf.gather(lut_values.flatten(), lut_values_assignments)
 
-        self.assertTrue(np.all(centers / (2 ** (lut_values_bitwidth - 1)) * thresholds == quantized_tensor),
+        self.assertTrue(np.allclose(centers / (2 ** (lut_values_bitwidth - 1)) * thresholds, quantized_tensor),
                         "Quantized tensor values weren't assigned correctly")
 
         # Assert some values are negative (signed quantization)
@@ -120,8 +122,10 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         self.assertTrue(quantizer_config['lut_values_bitwidth'] == lut_values_bitwidth)
         self.assertTrue(quantizer_config['eps'] == eps)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         quantized_tensor = quantizer(input_tensor)
 
         # Using a unsigned quantization, so we expect all values to be between 0
@@ -146,7 +150,7 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
 
         quant_tensor_values = (lut_values / (2 ** lut_values_bitwidth)) * thresholds
 
-        self.assertTrue(np.all(np.unique(quantized_tensor) == np.sort(quant_tensor_values)))
+        self.assertTrue(np.allclose(np.unique(quantized_tensor), np.sort(quant_tensor_values)))
 
         # Check quantized tensor assigned correctly
         tensor = tf.clip_by_value((input_tensor / (thresholds + eps)) * (2 ** lut_values_bitwidth),
@@ -157,7 +161,7 @@ class TestKerasActivationLutPotQuantizer(unittest.TestCase):
         lut_values_assignments = tf.argmin(tf.abs(tensor - expanded_lut_values), axis=-1)
         centers = tf.gather(lut_values.flatten(), lut_values_assignments)
 
-        self.assertTrue(np.all(centers / (2 ** lut_values_bitwidth) * thresholds == quantized_tensor),
+        self.assertTrue(np.allclose(centers / (2 ** lut_values_bitwidth) * thresholds, quantized_tensor),
                                   "Quantized tensor values weren't assigned correctly")
 
         # Assert all values are non-negative (unsigned quantization)

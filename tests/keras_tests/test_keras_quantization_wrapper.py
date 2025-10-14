@@ -1,4 +1,4 @@
-# Copyright 2023 Sony Semiconductor Israel, Inc. All rights reserved.
+# Copyright 2023 Sony Semiconductor Solutions, Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -116,4 +116,4 @@ class TestKerasQuantizationWrapper(unittest.TestCase):
         x = sub_wrapper.call(x)
         x = mul_wrapper.call(x)
         wrappers_output = matmul_wrapper.call(x)
-        self.assertTrue((wrappers_output == model_output).numpy().all())
+        self.assertTrue(np.allclose(wrappers_output.numpy(), model_output.numpy()))

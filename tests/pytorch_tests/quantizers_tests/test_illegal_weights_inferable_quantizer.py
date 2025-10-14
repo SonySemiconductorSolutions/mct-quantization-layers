@@ -1,4 +1,4 @@
-# Copyright 2023 Sony Semiconductor Israel, Inc. All rights reserved.
+# Copyright 2023 Sony Semiconductor Solutions, Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,8 +61,10 @@ class TestPytorchWeightsIllegalInferableQuantizers(unittest.TestCase):
                                                      max_range=max_range,
                                                      channel_axis=2)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = torch.rand(1, 50, 4, 50) * 100 - 50
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = torch.rand(1, 50, 4, 50) * 50
+        signs = torch.from_numpy(np.where(np.indices((1, 50, 4, 50)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8))    
+        input_tensor = input_tensor * signs
         fake_quantized_tensor = quantizer(input_tensor.to(get_working_device()))
 
         # We expect each channel values to be between min_range to max_range for each channel

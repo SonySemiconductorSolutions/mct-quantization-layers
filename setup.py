@@ -1,4 +1,4 @@
-# Copyright 2023 Sony Semiconductor Israel, Inc. All rights reserved.
+# Copyright 2023 Sony Semiconductor Solutions, Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,5 +52,5 @@ setup(name='mct-quantizers',
           "Topic :: Scientific/Engineering :: Artificial Intelligence"
       ],
       install_requires=read_install_requires(),
-      python_requires='>=3.6'
+      python_requires='>=3.9'
       )

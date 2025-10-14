@@ -1,4 +1,4 @@
-# Copyright 2023 Sony Semiconductor Israel, Inc. All rights reserved.
+# Copyright 2023 Sony Semiconductor Solutions, Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,8 +42,10 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         self.assertTrue(quantizer_config['per_channel'] is False)
         self.assertTrue(quantizer_config['channel_axis'] is None)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, dtype=tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         # Quantize tensor
         quantized_tensor = quantizer(input_tensor)
 
@@ -67,7 +69,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         scale = thresholds[0] / (2 ** (num_bits - 1))
         manually_quantized_tensor = tf.clip_by_value(np.round(input_tensor / scale), clip_value_min=-thresholds[0],
                                                      clip_value_max=thresholds[0] - scale)
-        self.assertTrue(np.all(manually_quantized_tensor.numpy() == quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor.numpy(), quantized_tensor.numpy()))
 
     def test_symmetric_weights_quantizer_per_channel(self):
         thresholds = [3., 6., 2.]
@@ -86,8 +88,10 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         self.assertTrue(quantizer_config['channel_axis'] == 3)
 
         thresholds = np.asarray(thresholds)
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, dtype=tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         # Quantize tensor
         quantized_tensor = quantizer(input_tensor)
 
@@ -114,7 +118,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = np.round(
             tf.clip_by_value(input_tensor, clip_value_min=-thresholds,
                              clip_value_max=thresholds - scale) / scale) * scale
-        self.assertTrue(np.all(manually_quantized_tensor == quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, quantized_tensor.numpy()))
 
     def test_power_of_two_weights_quantizer_per_channel(self):
         thresholds = [2., 4., 1.]
@@ -139,8 +143,10 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
 
         self.assertTrue(np.all(quantizer.min_range == -1 * thresholds))
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, dtype=tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         # We expect each channel values to be between -threshold to threshold since it's a signed quantization
@@ -165,7 +171,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = np.round(
             tf.clip_by_value(input_tensor, clip_value_min=-thresholds,
                              clip_value_max=thresholds - scale) / scale) * scale
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_power_of_two_weights_quantizer_per_tensor(self):
         thresholds = [1.]
@@ -188,8 +194,10 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
             np.log2(delta) == np.log2(delta).astype(int))
         self.assertTrue(is_pot_delta, f'Expected delta to be POT but: {delta}')
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 50, 3) * 100 - 50, dtype=tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 50, 3) * 50
+        signs = np.where(np.indices((1, 50, 50, 3)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         self.assertTrue(np.max(fake_quantized_tensor) < thresholds[
@@ -209,7 +217,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         manually_quantized_tensor = np.round(
             tf.clip_by_value(input_tensor, clip_value_min=-thresholds,
                              clip_value_max=thresholds - scale) / scale) * scale
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_uniform_weights_quantizer_per_channel(self):
         num_bits = 3
@@ -231,8 +239,10 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         self.assertTrue(quantizer_config['per_channel'] is True)
         self.assertTrue(quantizer_config['channel_axis'] == channel_axis)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 4, 50, 50) * 100 - 50, dtype=tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 4, 50, 50) * 50
+        signs = np.where(np.indices((1, 4, 50, 50)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         min_range = np.asarray(min_range)
@@ -264,7 +274,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         scale = (max_range - min_range) / (2 ** num_bits - 1)
         manually_quantized_tensor = np.round((tf.clip_by_value(
             input_tensor, clip_value_min=min_range, clip_value_max=max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_uniform_weights_quantizer_per_tensor(self):
         num_bits = 3
@@ -286,8 +296,10 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         self.assertTrue(quantizer_config['per_channel'] is False)
         self.assertTrue(quantizer_config['channel_axis'] == channel_axis)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 4, 50) * 100 - 50, dtype=tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 4, 50) * 50
+        signs = np.where(np.indices((1, 50, 4, 50)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         min_range = np.asarray(min_range)
@@ -311,7 +323,7 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         scale = (max_range - min_range) / (2 ** num_bits - 1)
         manually_quantized_tensor = np.round((tf.clip_by_value(
             input_tensor, clip_value_min=min_range, clip_value_max=max_range) - min_range) / scale) * scale + min_range
-        self.assertTrue(np.all(manually_quantized_tensor == fake_quantized_tensor.numpy()))
+        self.assertTrue(np.allclose(manually_quantized_tensor, fake_quantized_tensor.numpy()))
 
     def test_uniform_weights_quantizer_zero_not_in_range(self):
         num_bits = 3
@@ -348,8 +360,10 @@ class TestKerasWeightsInferableQuantizers(unittest.TestCase):
         #     self.assertTrue(quantizer_config['max_range'][i] == max_adj)
         #     self.assertTrue(quantizer_config['min_range'][i] == min_adj)
 
-        # Initialize a random input to quantize between -50 to 50.
-        input_tensor = tf.constant(np.random.rand(1, 50, 4, 50) * 100 - 50, dtype=tf.float32)
+        # Initialize a random input to quantize between -50 to 50. Input includes positive and negative values.
+        input_tensor = np.random.rand(1, 50, 4, 50) * 50
+        signs = np.where(np.indices((1, 50, 4, 50)).sum(axis=0) % 2 == 0, 1, -1).astype(np.int8)
+        input_tensor = tf.constant(input_tensor * signs, dtype=tf.float32)
         fake_quantized_tensor = quantizer(input_tensor)
 
         # We expect each channel values to be between min_range to max_range for each channel

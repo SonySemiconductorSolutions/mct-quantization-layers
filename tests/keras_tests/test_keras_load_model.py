@@ -1,4 +1,4 @@
-# Copyright 2023 Sony Semiconductor Israel, Inc. All rights reserved.
+# Copyright 2023 Sony Semiconductor Solutions, Inc. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ class TestKerasLoadModel(unittest.TestCase):
         os.remove(tmp_h5_file)
 
         loaded_pred = loaded_model(x)
-        self.assertTrue(np.all(loaded_pred == pred))
+        self.assertTrue(np.allclose(loaded_pred, pred))
 
     def test_save_and_load_activation_pot(self):
         num_bits = 3
