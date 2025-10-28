@@ -57,7 +57,14 @@ QUANTIZER2ARGS = {**dict.fromkeys([ActivationPOTInferableQuantizer, ActivationSy
 
 def _build_model_with_quantization_holder(act_layer, quant_activation_holder, input_shape, model_name):
     inputs = tf.keras.layers.Input(shape=input_shape)
-    x = tf.keras.layers.Conv2D(filters=3, kernel_size=4)(inputs)
+    # If all conv outputs are negative, the ReLU output will be 0, causing a quantizer validation error.
+    # To include positive and negative values ​​in the conv outputs, we set the conv weights to positive values.
+    # Also set the upper half of the input tensor to positive and the lower half to negative.
+    conv = tf.keras.layers.Conv2D(filters=3, kernel_size=4)
+    conv.build(input_shape=input_shape)
+    kernel, bias = conv.get_weights()
+    conv.set_weights([np.abs(kernel), bias])
+    x = conv(inputs)
     act_output = act_layer(x)
     quant_output = quant_activation_holder(act_output)
     return tf.keras.Model(inputs=inputs, outputs=[quant_output, act_output], name=model_name)
@@ -65,8 +72,19 @@ def _build_model_with_quantization_holder(act_layer, quant_activation_holder, in
 
 def _build_model_with_operator_quantization_holder(act_layer, quant_activation_holder, input_shape, model_name):
     inputs = tf.keras.layers.Input(shape=input_shape)
-    x = tf.keras.layers.Conv2D(filters=3, kernel_size=4)(inputs)
-    y = tf.keras.layers.Conv2D(filters=3, kernel_size=4)(inputs)
+    # If all conv outputs are negative, the ReLU output will be 0, causing a quantizer validation error.
+    # To include positive and negative values ​​in the conv outputs, we set the conv weights to positive values.
+    # Also set the upper half of the input tensor to positive and the lower half to negative.
+    conv1 = tf.keras.layers.Conv2D(filters=3, kernel_size=4)
+    conv1.build(input_shape=input_shape)
+    kernel1, bias1 = conv1.get_weights()
+    conv1.set_weights([np.abs(kernel1), bias1])
+    conv2 = tf.keras.layers.Conv2D(filters=3, kernel_size=4)
+    conv2.build(input_shape=input_shape)
+    kernel2, bias2 = conv2.get_weights()
+    conv2.set_weights([np.abs(kernel2), bias2])
+    x = conv1(inputs)
+    y = conv2(inputs)
     act_output = act_layer([x, y])
     quant_output = quant_activation_holder(act_output)
     return tf.keras.Model(inputs=inputs, outputs=[quant_output, act_output], name=model_name)
@@ -98,7 +116,14 @@ class BaseActivationQuantizerBuildAndSaveTest(unittest.TestCase):
         self.assertEqual(len(quant_holder_layer), 1)
 
         # Verifying activation quantization after holder
-        output = model(np.random.randn(1, *input_shape))
+        # If all conv outputs are negative, the ReLU output will be 0, causing a quantizer validation error.
+        # To include positive and negative values ​​in the conv outputs, we set the conv weights to positive values.
+        # Also set the upper half of the input tensor to positive and the lower half to negative.
+        rand_inp = np.random.randn(1, *input_shape)
+        sign = np.ones((1, *input_shape))
+        sign[:, rand_inp.shape[1]//2:, :, :] = -1
+        rand_inp = rand_inp * sign
+        output = model(rand_inp)
         self.assertTrue(np.any(output[0] != output[1]), "Expecting activation layer output to be different "
                                                         "from the activation holder layer output, which should be "
                                                         "quantized.")
