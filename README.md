@@ -45,11 +45,6 @@ To install the latest stable release of MCT Quantizer from PyPi, run the followi
 pip install mct-quantizers
 ```
 
-If you prefer to use the nightly package (unstable version), you can install it with the following command:
-```
-pip install mct-quantizers-nightly
-```
-
 #### From Source
 To work with the MCT Quantizers source code, follow these steps:
 ```
