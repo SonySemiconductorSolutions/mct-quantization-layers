@@ -52,5 +52,5 @@ setup(name='mct-quantizers',
           "Topic :: Scientific/Engineering :: Artificial Intelligence"
       ],
       install_requires=read_install_requires(),
-      python_requires='>=3.9'
+      python_requires='>=3.10'
       )
