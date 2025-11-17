@@ -57,7 +57,13 @@ def _build_model_with_quantization_holder(act_layer, quant_activation_holder, in
     class Model(torch.nn.Module):
         def __init__(self):
             super(Model, self).__init__()
+            # If all conv outputs are negative, the ReLU output will be 0, causing a quantizer validation error.
+            # To include positive and negative values ​​in the conv outputs, we set the conv weights to positive values.
+            # Also set the upper half of the input tensor to positive and the lower half to negative.
             self.conv = torch.nn.Conv2d(in_channels=3, out_channels=3, kernel_size=4)
+            with torch.no_grad():
+                weight = self.conv.weight.abs()
+                self.conv.weight.copy_(weight)
             self.act_layer = act_layer
             self.quant_activation_holder = quant_activation_holder
 
@@ -74,8 +80,16 @@ def _build_model_with_operator_quantization_holder(act_layer, quant_activation_h
     class Model(torch.nn.Module):
         def __init__(self):
             super(Model, self).__init__()
+            # If all conv outputs are negative, the ReLU output will be 0, causing a quantizer validation error.
+            # To include positive and negative values ​​in the conv outputs, we set the conv weights to positive values.
+            # Also set the upper half of the input tensor to positive and the lower half to negative.
             self.conv1 = torch.nn.Conv2d(in_channels=3, out_channels=3, kernel_size=4)
             self.conv2 = torch.nn.Conv2d(in_channels=3, out_channels=3, kernel_size=4)
+            with torch.no_grad():
+                weight1 = self.conv1.weight.abs()
+                self.conv1.weight.copy_(weight1)
+                weight2 = self.conv2.weight.abs()
+                self.conv2.weight.copy_(weight2)
             self.act_layer = act_layer
             self.quant_activation_holder = quant_activation_holder
 
@@ -115,7 +129,13 @@ class BaseActivationQuantizerBuildAndSaveTest(unittest.TestCase):
         quant_holder_layer = [_l for _, _l in model.named_modules() if isinstance(_l, PytorchActivationQuantizationHolder)]
         self.assertEqual(len(quant_holder_layer), 1)
 
+        # If all conv outputs are negative, the ReLU output will be 0, causing a quantizer validation error.
+        # To include positive and negative values ​​in the conv outputs, we set the conv weights to positive values.
+        # Also set the upper half of the input tensor to positive and the lower half to negative.
         rand_inp = torch.rand(1, *input_shape).to(BaseActivationQuantizerBuildAndSaveTest.device)
+        sign = torch.ones(1, *input_shape)
+        sign[:, :, rand_inp.shape[2]//2:, :] = -1
+        rand_inp = rand_inp * sign
         model = model.to(BaseActivationQuantizerBuildAndSaveTest.device)
 
         # Verifying activation quantization after holder
