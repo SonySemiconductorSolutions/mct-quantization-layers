@@ -24,14 +24,12 @@ LOGGER_NAME = 'MCT Quantizers'
 
 class Logger:
     # Logger has levels of verbosity.
-    log_level_translate = {
-        'debug': logging.DEBUG,
-        'info': logging.INFO,
-        'warning': logging.WARNING,
-        'error': logging.ERROR,
-        'critical': logging.CRITICAL
-    }
     LOG_PATH = None
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARNING = logging.WARNING
+    ERROR = logging.ERROR
+    CRITICAL = logging.CRITICAL
 
     @staticmethod
     def __check_path_create_dir(log_path: str):
@@ -58,11 +56,40 @@ class Logger:
         logger.setLevel(log_level)
 
     @staticmethod
+    def set_handler_level(log_level=logging.INFO):
+        """
+        Set log level for all handlers attached to the logger.
+        Args:
+            log_level: Level of verbosity to set for the handlers.
+
+        """
+
+        logger = Logger.get_logger()
+        for handler in logger.handlers:
+            handler.setLevel(log_level)
+
+    @staticmethod
     def get_logger():
         """
         Returns: An instance of the logger.
         """
         return logging.getLogger(LOGGER_NAME)
+
+    @staticmethod
+    def set_stream_handler():
+        """
+        Add a StreamHandler to output logs to the console (stdout).
+        """
+        logger = Logger.get_logger()
+        
+        # Check if StreamHandler already exists
+        for handler in logger.handlers:
+            if isinstance(handler, logging.StreamHandler):
+                return
+        
+        # Add StreamHandler
+        sh = logging.StreamHandler()
+        logger.addHandler(sh)
 
     @staticmethod
     def set_log_file(log_folder: str = None):
@@ -87,7 +114,6 @@ class Logger:
         Logger.__check_path_create_dir(Logger.LOG_PATH)
 
         fh = logging.FileHandler(log_name)
-        fh.setLevel(logging.DEBUG)
         logger.addHandler(fh)
 
         print(f'log file is in {log_name}')
@@ -179,8 +205,16 @@ def set_log_folder(folder: str, level: int = logging.INFO):
 
     Args:
         folder: Folder path to save the log file.
-        level: Level of verbosity to set to the logger.
+        level: Level of verbosity to set to the logger and handlers.
 
+    Note:
+        This is a convenience function that calls multiple Logger methods
+        to set up logging.
+
+        Don't use Python's original logger.
     """
+
+    Logger.set_stream_handler()
     Logger.set_log_file(folder)
     Logger.set_logger_level(level)
+    Logger.set_handler_level(level)
