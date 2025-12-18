@@ -217,3 +217,4 @@ def set_log_folder(folder: str, level: int = logging.INFO):
     Logger.set_log_file(folder)
     Logger.set_logger_level(level)
     Logger.set_handler_level(level)
+
