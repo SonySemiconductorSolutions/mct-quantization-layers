@@ -13,208 +13,34 @@
 # limitations under the License.
 # ==============================================================================
 
-
-import logging
+import importlib.util
+import sys
 import os
-from datetime import datetime
-from pathlib import Path
-
-LOGGER_NAME = 'MCT Quantizers'
 
 
-class Logger:
-    # Logger has levels of verbosity.
-    LOG_PATH = None
-    DEBUG = logging.DEBUG
-    INFO = logging.INFO
-    WARNING = logging.WARNING
-    ERROR = logging.ERROR
-    CRITICAL = logging.CRITICAL
-
-    @staticmethod
-    def __check_path_create_dir(log_path: str):
-        """
-        Create a path if not exist. Otherwise, do nothing.
-        Args:
-            log_path: Path to create or verify that exists.
-
-        """
-
-        if not os.path.exists(log_path):
-            Path(log_path).mkdir(parents=True, exist_ok=True)
-
-    @staticmethod
-    def set_logger_level(log_level=logging.INFO):
-        """
-        Set log level to determine the logger verbosity.
-        Args:
-            log_level: Level of verbosity to set for the logger.
-
-        """
-
-        logger = Logger.get_logger()
-        logger.setLevel(log_level)
-
-    @staticmethod
-    def set_handler_level(log_level=logging.INFO):
-        """
-        Set log level for all handlers attached to the logger.
-        Args:
-            log_level: Level of verbosity to set for the handlers.
-
-        """
-
-        logger = Logger.get_logger()
-        for handler in logger.handlers:
-            handler.setLevel(log_level)
-
-    @staticmethod
-    def get_logger():
-        """
-        Returns: An instance of the logger.
-        """
-        return logging.getLogger(LOGGER_NAME)
-
-    @staticmethod
-    def set_stream_handler():
-        """
-        Add a StreamHandler to output logs to the console (stdout).
-        """
-        logger = Logger.get_logger()
-        
-        # Check if StreamHandler already exists
-        for handler in logger.handlers:
-            if isinstance(handler, logging.StreamHandler):
-                return
-        
-        # Add StreamHandler
-        sh = logging.StreamHandler()
-        logger.addHandler(sh)
-
-    @staticmethod
-    def set_log_file(log_folder: str = None):
-        """
-        Setting the logger log file path. The method gets the folder for the log file.
-        In that folder, it creates a log file according to the timestamp.
-        Args:
-            log_folder: Folder path to hold the log file.
-
-        """
-
-        logger = Logger.get_logger()
-
-        ts = datetime.now(tz=None).strftime("%d%m%Y_%H%M%S")
-
-        if log_folder is None:
-            Logger.LOG_PATH = os.path.join(os.environ.get('LOG_PATH', os.getcwd()), f"logs_{ts}")
-        else:
-            Logger.LOG_PATH = os.path.join(log_folder, f"logs_{ts}")
-        log_name = os.path.join(Logger.LOG_PATH, f'mct_log.log')
-
-        Logger.__check_path_create_dir(Logger.LOG_PATH)
-
-        fh = logging.FileHandler(log_name)
-        logger.addHandler(fh)
-
-        print(f'log file is in {log_name}')
-
-    @staticmethod
-    def shutdown():
-        """
-        An orderly command to shutdown by flushing and closing all logging handlers.
-
-        """
-        Logger.LOG_PATH = None
-        logging.shutdown()
-
-    ########################################
-    # Delegating methods to wrapped logger
-    ########################################
-
-    @staticmethod
-    def critical(msg: str):
-        """
-        Log a message at 'critical' severity and raise an exception.
-        Args:
-            msg: Message to log.
-
-        """
-        Logger.get_logger().critical(msg)
-        raise Exception(msg)
-
-    @staticmethod
-    def exception(msg: str):
-        """
-        Log a message at 'exception' severity and raise an exception.
-        Args:
-            msg: Message to log.
-
-        """
-        Logger.get_logger().exception(msg)
-        raise Exception(msg)
-
-    @staticmethod
-    def debug(msg: str):
-        """
-        Log a message at 'debug' severity.
-
-        Args:
-            msg: Message to log.
-
-        """
-        Logger.get_logger().debug(msg)
-
-    @staticmethod
-    def info(msg: str):
-        """
-        Log a message at 'info' severity.
-
-        Args:
-            msg: Message to log.
-
-        """
-        Logger.get_logger().info(msg)
-
-    @staticmethod
-    def warning(msg: str):
-        """
-        Log a message at 'warning' severity.
-
-        Args:
-            msg: Message to log.
-
-        """
-        Logger.get_logger().warning(msg)
-
-    @staticmethod
-    def error(msg: str):
-        """
-        Log a message at 'error' severity and raise an exception.
-
-        Args:
-            msg: Message to log.
-
-        """
-        Logger.get_logger().error(msg)
-        raise Exception(msg)
-
-
-def set_log_folder(folder: str, level: int = logging.INFO):
+def _import_mct_logger():
     """
-    Set a directory path for saving a log file.
-
-    Args:
-        folder: Folder path to save the log file.
-        level: Level of verbosity to set to the logger and handlers.
-
-    Note:
-        This is a convenience function that calls multiple Logger methods
-        to set up logging.
-
-        Don't use Python's original logger.
+    Import Logger and set_log_folder from model_compression_toolkit.logger
+    without triggering model_compression_toolkit/__init__.py (to avoid circular imports).
     """
+    module_name = "model_compression_toolkit.logger"
+    
+    # If already loaded, return from cache
+    if module_name in sys.modules:
+        module = sys.modules[module_name]
+        return module.Logger, module.set_log_folder
+    
+    # Find model_compression_toolkit/logger.py in sys.path
+    for path in sys.path:
+        logger_path = os.path.join(path, "model_compression_toolkit", "logger.py")
+        if os.path.exists(logger_path):
+            spec = importlib.util.spec_from_file_location(module_name, logger_path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
+            spec.loader.exec_module(module)
+            return module.Logger, module.set_log_folder
+    
+    raise ImportError("Cannot find model_compression_toolkit.logger")
 
-    Logger.set_stream_handler()
-    Logger.set_log_file(folder)
-    Logger.set_logger_level(level)
-    Logger.set_handler_level(level)
+
+Logger, set_log_folder = _import_mct_logger()
