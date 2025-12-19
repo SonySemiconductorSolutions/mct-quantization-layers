@@ -35,9 +35,9 @@ class Logger:
     def __check_path_create_dir(log_path: str):
         """
         Create a path if not exist. Otherwise, do nothing.
+
         Args:
             log_path: Path to create or verify that exists.
-
         """
 
         if not os.path.exists(log_path):
@@ -47,9 +47,9 @@ class Logger:
     def set_logger_level(log_level=logging.INFO):
         """
         Set log level to determine the logger verbosity.
+
         Args:
             log_level: Level of verbosity to set for the logger.
-
         """
 
         logger = Logger.get_logger()
@@ -59,9 +59,9 @@ class Logger:
     def set_handler_level(log_level=logging.INFO):
         """
         Set log level for all handlers attached to the logger.
+
         Args:
             log_level: Level of verbosity to set for the handlers.
-
         """
 
         logger = Logger.get_logger()
@@ -96,9 +96,9 @@ class Logger:
         """
         Setting the logger log file path. The method gets the folder for the log file.
         In that folder, it creates a log file according to the timestamp.
+
         Args:
             log_folder: Folder path to hold the log file.
-
         """
 
         logger = Logger.get_logger()
@@ -122,7 +122,6 @@ class Logger:
     def shutdown():
         """
         An orderly command to shutdown by flushing and closing all logging handlers.
-
         """
         Logger.LOG_PATH = None
         logging.shutdown()
@@ -135,9 +134,9 @@ class Logger:
     def critical(msg: str):
         """
         Log a message at 'critical' severity and raise an exception.
+
         Args:
             msg: Message to log.
-
         """
         Logger.get_logger().critical(msg)
         raise Exception(msg)
@@ -146,9 +145,9 @@ class Logger:
     def exception(msg: str):
         """
         Log a message at 'exception' severity and raise an exception.
+
         Args:
             msg: Message to log.
-
         """
         Logger.get_logger().exception(msg)
         raise Exception(msg)
@@ -160,7 +159,6 @@ class Logger:
 
         Args:
             msg: Message to log.
-
         """
         Logger.get_logger().debug(msg)
 
@@ -171,7 +169,6 @@ class Logger:
 
         Args:
             msg: Message to log.
-
         """
         Logger.get_logger().info(msg)
 
@@ -182,7 +179,6 @@ class Logger:
 
         Args:
             msg: Message to log.
-
         """
         Logger.get_logger().warning(msg)
 
@@ -193,7 +189,6 @@ class Logger:
 
         Args:
             msg: Message to log.
-
         """
         Logger.get_logger().error(msg)
 
