@@ -21,5 +21,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt          
           pip install torch==${{ inputs.torch-version }} torchvision "onnx<1.18" "onnxruntime<1.22" "onnxruntime-extensions<0.14"
+      - name: Record environment
+        if: always()
+        run: |
+          echo "Source SHA: $GITHUB_SHA"
+          python --version
+          python -m pip list
+      - name: Check dependencies
+        run: python -m pip check
       - name: Run unittests
         run: python -m unittest discover tests/pytorch_tests -v
