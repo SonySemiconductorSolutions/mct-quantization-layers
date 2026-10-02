@@ -1,0 +1,19 @@
+name: Test PyTorch Version Upgrade
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  test-pytorch-version:
+    strategy:
+      fail-fast: false
+      matrix:
+        torch-version: ["2.6.*", "2.7.*", "2.8.*", "2.9.*", "2.10.*", "2.11.*", "2.12.*", "2.13.*", "2.14.*"]
+    uses: ./.github/workflows/run_pytorch_tests.yml
+    with:
+      torch-version: ${{ matrix.torch-version }}

@@ -1,0 +1,34 @@
+name: Test PyTorch Version Upgrade Compatibility
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  test-backward-compatibility:
+    strategy:
+      fail-fast: false
+      matrix:
+        torch-version: ["2.6.*", "2.7.*", "2.8.*", "2.9.*", "2.10.*", "2.11.*", "2.12.*", "2.13.*", "2.14.*"]
+        mctq-version: ["v1.5.2", "v1.6.0"]
+    uses: ./.github/workflows/compatibility_torch_tests.yml
+    with:
+      save_version: ${{ matrix.mctq-version }}
+      python_version: "3.12"
+      torch_version: ${{ matrix.torch-version }}
+
+  test-forward-compatibility:
+    strategy:
+      fail-fast: false
+      matrix:
+        torch-version: ["2.6.*", "2.7.*", "2.8.*", "2.9.*", "2.10.*", "2.11.*", "2.12.*", "2.13.*", "2.14.*"]
+        mctq-version: ["v1.5.2", "v1.6.0"]
+    uses: ./.github/workflows/forward_compatibility_torch_tests.yml
+    with:
+      load_version: ${{ matrix.mctq-version }}
+      python_version: "3.12"
+      torch_version: ${{ matrix.torch-version }}
