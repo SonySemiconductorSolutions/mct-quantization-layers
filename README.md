@@ -25,6 +25,7 @@ This interface is based on the [`BaseInferableQuantizer`](https://github.com/Son
 On top of `BaseInferableQuantizer` the library defines a set of framework-specific quantizers for both weights and activations:
 1. [Keras Quantizers](https://github.com/SonySemiconductorSolutions/mct-quantization-layers/tree/main/mct_quantizers/keras/quantizers)
 2. [Pytorch Quantizers](https://github.com/SonySemiconductorSolutions/mct-quantization-layers/tree/main/mct_quantizers/pytorch/quantizers)
+3. [Omni `BFP-64` & Quantum 64-Trit `b1.58` Inferable Quantizers](mct_quantizers/common/bfp64_trit_pq_quantizers.py) (`QuantizationMethod.BFP64_BLOCK` & `QuantizationMethod.QUANTUM_TRIT_B158`, `3.94×` `BFP-64` activation compression, `12.8×–16×` 64-trit bitplane weight compression, and multiplier-free `POPCNT` / integer bit-scan dot products for edge NPU silicon — see [https://8b.is](https://8b.is), [`8b-is/alexiai`](https://github.com/8b-is/alexiai), and [`8b-is/Engram`](https://github.com/8b-is/Engram)).
 
 ### The mark_quantizer Decorator
 

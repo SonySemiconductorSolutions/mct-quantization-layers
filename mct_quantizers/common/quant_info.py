@@ -30,9 +30,15 @@ class QuantizationMethod(Enum):
 
     LUT_SYM_QUANTIZER - quantization using a lookup table and symmetric threshold.
 
+    BFP64_BLOCK - 8b-is Omni BFP-64 block floating-point quantization (shared exponent per 64 lanes).
+
+    QUANTUM_TRIT_B158 - 8b-is Quantum 64-Trit bitplane (b1.58 {-1, 0, +1}) quantization with POPCNT inner products.
+
     """
     POWER_OF_TWO = 0
     LUT_POT_QUANTIZER = 1
     SYMMETRIC = 2
     UNIFORM = 3
     LUT_SYM_QUANTIZER = 4
+    BFP64_BLOCK = 5
+    QUANTUM_TRIT_B158 = 6

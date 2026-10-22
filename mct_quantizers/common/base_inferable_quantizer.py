@@ -15,7 +15,10 @@
 from enum import Enum
 from typing import Any, Dict, List
 
-from mct_quantizers.common.quant_info import QuantizationMethod
+try:
+    from mct_quantizers.common.quant_info import QuantizationMethod
+except ImportError:
+    from quant_info import QuantizationMethod
 
 
 class QuantizationTarget(Enum):
