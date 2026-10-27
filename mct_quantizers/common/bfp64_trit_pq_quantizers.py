@@ -19,7 +19,7 @@ Omni `BFP-64`, Quantum 64-Trit Bitplane (`b1.58`), and `p/q` ("Counting Divided"
 Inferable Quantizers for Constrained Edge Silicon & AI Sensors (IMX500 / NPU)
 ================================================================================
 
-Brought to you by **Chris, Hue & the 8b-is team** (https://8b.is · WhatsApp: `+1 757-614-7542`):
+Brought to you by **Chris, Hue & the 8b-is team** (https://8b.is):
   - `8b-is/alexiai` — Sovereign offline AI substrate (`GAIA-MLX-QUANT`, ternary b1.58,
     Quantum 64-Trit bitplanes, `BFP-64`, `wupz`)
   - `8b-is/Engram` — Conditional Memory via Scalable Lookup with `BFP-64` & `p/q`
@@ -41,7 +41,8 @@ zero runtime dependencies (pure Python 3 stdlib + optional NumPy / PyTorch):
 2. **`QuantumTritBitplaneInferableQuantizer` (`QuantizationMethod.QUANTUM_TRIT_B158`)**:
    - Quantizes weights into ternary trits $\{-1, 0, +1\}$ packed into dual 64-bit
      bitplanes `(pos_mask: u64, neg_mask: u64)` per 64 weights (`16 bytes` bitmasks +
-     `4 bytes` rational `Q16` scale = `20 bytes / 64 weights` = **`12.8x - 16x` compression**).
+     `4 bytes` rational `Q16` scale = `20 bytes / 64 weights` = **`12.8x` compression**
+     vs `256 bytes` FP32, pinned by `test_quantum_trit_compression_ratio`).
    - Replaces floating-point MACs on edge NPUs with pure bitwise `AND`/`OR`, `POPCNT`,
      and integer add/sub accumulation.
 """
@@ -125,6 +126,11 @@ class PackedQuantumTritBlock64:
     neg_mask: int
     scale_q16: int
     length: int = 64
+
+    @property
+    def byte_size(self) -> int:
+        """Wire size: two 64-bit bitmasks plus a `Q16` scale (`20 B` per 64 trits)."""
+        return 16 + 4
 
     @property
     def active_trits(self) -> int:

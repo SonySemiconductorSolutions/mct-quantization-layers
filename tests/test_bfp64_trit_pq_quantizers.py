@@ -53,6 +53,20 @@ class TestMctBfp64TritPqQuantizers(unittest.TestCase):
         for orig, rec in zip(values, rec16):
             self.assertAlmostEqual(orig, rec, delta=2e-4)
 
+    def test_quantum_trit_compression_ratio(self):
+        weights = [math.cos(0.19 * i) * 0.8 for i in range(128)]
+        blocks = QuantumTritBitplaneInferableQuantizer(threshold_ratio=0.45).pack_blocks(
+            weights
+        )
+        self.assertEqual(len(blocks), 2)
+        for block in blocks:
+            self.assertEqual(block.length, 64)
+            # 20 B per 64 trits (2 x u64 bitmask + Q16 scale) vs 256 B FP32.
+            self.assertEqual(block.byte_size, 20)
+        packed_bytes = sum(b.byte_size for b in blocks)
+        fp32_bytes = len(weights) * 4
+        self.assertAlmostEqual(fp32_bytes / packed_bytes, 12.8, places=6)
+
     def test_quantum_trit_b158_bitplane_and_bfp64_dot(self):
         weights = [math.cos(0.19 * i) * 0.8 for i in range(128)]
         acts = [math.sin(0.11 * i) * 1.2 for i in range(128)]
